@@ -1,0 +1,19 @@
+{
+  "SeedUsers": [
+    {
+      "Email": "admin@gmail.com",
+      "Password": "Admin@12345",
+      "Role": "Admin"
+    },
+    {
+      "Email": "hr@gmail.com",
+      "Password": "Hr@12345",
+      "Role": "HR"
+    },
+    {
+      "Email": "viewer@gmail.com",
+      "Password": "Viewer@12345",
+      "Role": "Viewer"
+    }
+  ]
+}

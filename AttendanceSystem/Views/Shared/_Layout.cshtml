@@ -2,6 +2,7 @@
     var ctrl = ViewContext.RouteData.Values["controller"]?.ToString();
     string Active(string c) => ctrl == c ? "active" : "";
     var signedIn = User.Identity?.IsAuthenticated == true;
+    var roleNames = User.FindAll(System.Security.Claims.ClaimTypes.Role).Select(r => r.Value).ToList();
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -15,50 +16,62 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
-@if (signedIn)
-{
-    <aside class="app-sidebar" id="sidebar">
-        <div class="brand"><i class="bi bi-fingerprint"></i> Attendance</div>
-        <nav class="nav flex-column mt-2">
-            <a class="nav-link @Active("Home")" asp-controller="Home" asp-action="Index"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    @if (signedIn)
+    {
+        <aside class="app-sidebar" id="sidebar">
+            <div class="brand"><i class="bi bi-fingerprint"></i> Attendance</div>
+            <nav class="nav flex-column mt-2">
+                <a class="nav-link @Active("Home")" asp-controller="Home" asp-action="Index"><i class="bi bi-speedometer2"></i> Dashboard</a>
 
-            <div class="nav-heading">Setup</div>
-            <a class="nav-link disabled" href="#"><i class="bi bi-diagram-3"></i> Zones</a>
-            <a class="nav-link disabled" href="#"><i class="bi bi-hdd-network"></i> Devices</a>
-            <a class="nav-link disabled" href="#"><i class="bi bi-people"></i> Employees</a>
-            <a class="nav-link disabled" href="#"><i class="bi bi-clock-history"></i> Shifts</a>
+                @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+                {
+                    <div class="nav-heading">Setup</div>
+                    <a class="nav-link disabled" href="#"><i class="bi bi-diagram-3"></i> Zones</a>
+                    <a class="nav-link disabled" href="#"><i class="bi bi-hdd-network"></i> Devices</a>
+                    <a class="nav-link disabled" href="#"><i class="bi bi-people"></i> Employees</a>
+                    <a class="nav-link disabled" href="#"><i class="bi bi-clock-history"></i> Shifts</a>
+                }
 
-            <div class="nav-heading">Attendance</div>
-            <a class="nav-link disabled" href="#"><i class="bi bi-calendar-week"></i> Roster</a>
-            <a class="nav-link disabled" href="#"><i class="bi bi-calendar-heart"></i> Holidays</a>
-            <a class="nav-link disabled" href="#"><i class="bi bi-airplane"></i> Leave</a>
-            <a class="nav-link disabled" href="#"><i class="bi bi-file-earmark-bar-graph"></i> Reports</a>
-        </nav>
-    </aside>
+                <div class="nav-heading">Attendance</div>
+                <a class="nav-link disabled" href="#"><i class="bi bi-calendar-week"></i> Roster</a>
+                <a class="nav-link disabled" href="#"><i class="bi bi-calendar-heart"></i> Holidays</a>
+                <a class="nav-link disabled" href="#"><i class="bi bi-airplane"></i> Leave</a>
+                <a class="nav-link disabled" href="#"><i class="bi bi-file-earmark-bar-graph"></i> Reports</a>
 
-    <div class="app-main">
+                @if (User.IsInRole("Admin"))
+                {
+                    <div class="nav-heading">Admin</div>
+                    <a class="nav-link disabled" href="#"><i class="bi bi-shield-lock"></i> Users &amp; Roles</a>
+                }
+            </nav>
+        </aside>
+
+        <div class="app-main">
+            <header class="app-topbar">
+                <button class="btn btn-outline-secondary d-lg-none" type="button" onclick="document.getElementById('sidebar').classList.toggle('open')">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div class="fw-semibold">
+                    @ViewData["Title"]
+                    <span class="badge bg-primary ms-2">@(roleNames.Any() ? string.Join(", ", roleNames) : "No role")</span>
+                </div>
+                <partial name="_LoginPartial" />
+            </header>
+            <main class="app-content">
+                @RenderBody()
+            </main>
+        </div>
+    }
+    else
+    {
         <header class="app-topbar">
-            <button class="btn btn-outline-secondary d-lg-none" type="button" onclick="document.getElementById('sidebar').classList.toggle('open')">
-                <i class="bi bi-list"></i>
-            </button>
-            <div class="fw-semibold">@ViewData["Title"]</div>
+            <div class="fw-semibold"><i class="bi bi-fingerprint"></i> Attendance System</div>
             <partial name="_LoginPartial" />
         </header>
-        <main class="app-content">
+        <main class="container py-4">
             @RenderBody()
         </main>
-    </div>
-}
-else
-{
-    <header class="app-topbar">
-        <div class="fw-semibold"><i class="bi bi-fingerprint"></i> Attendance System</div>
-        <partial name="_LoginPartial" />
-    </header>
-    <main class="container py-4">
-        @RenderBody()
-    </main>
-}
+    }
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
